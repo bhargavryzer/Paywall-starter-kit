@@ -1,0 +1,64 @@
+### FILENAME ###
+ yaml
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: paywall-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: paywall-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: paywall-api
+    ports:
+      - "4000:4000"
+    environment:
+      # These should ideally be loaded from .env in production, but for local dev, we can pass them
+      MONGO_URI: mongodb://root:rootpassword@mongodb:27017/paywall?authSource=admin
+      REDIS_URL: redis://redis:6379
+      PORT: 4000
+      # JWT_PRIVATE_KEY_PATH and JWT_PUBLIC_KEY_PATH will be relative to the container's working directory
+      # Ensure these keys are mounted or copied into the container
+      # For development, you might generate them inside the container or mount a volume
+      JWT_PRIVATE_KEY_PATH: ./keys/private.pem
+      JWT_PUBLIC_KEY_PATH: ./keys/public.pem
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules # Exclude node_modules from host mount to prevent issues
+      - ./apps/api/keys:/app/keys # Mount keys directory
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+    # Command to run the application, assuming 'pnpm start' is defined in package.json
+    command: pnpm start
+
+volumes:
+  mongodb_data:
+  redis_data:
+ 
