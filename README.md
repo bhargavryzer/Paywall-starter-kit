@@ -1,5 +1,3 @@
-### FILENAME ###
- markdown
 # Paywall & Subscription Starter Kit
 
 This project provides a production-grade "Paywall & Subscription Starter Kit" built with Node.js, TypeScript, Express, MongoDB, and Stripe. It's designed to be a comprehensive starting point for applications requiring robust subscription management and content paywall functionalities.
@@ -102,4 +100,3 @@ Contributions are welcome! Please refer to the contributing guidelines (to be ad
 ## License
 
 This project is licensed under the MIT License.
- 
